@@ -1,5 +1,5 @@
 {
-  "name": "envoi-sdk",
+  "name": "@xarmian/envoi-sdk",
   "version": "0.1.0",
   "description": "SDK for enVoi, a naming service for Voi Network",
   "main": "dist/index.js",
@@ -26,7 +26,10 @@
     "envoi",
     "naming-service",
     "algorand",
-    "avm"
+    "avm",
+    "dns",
+    "ens",
+    "blockchain"
   ],
   "author": "xarmian",
   "license": "MIT",
@@ -46,7 +49,8 @@
   },
   "files": [
     "dist",
-    "README.md"
+    "README.md",
+    "LICENSE"
   ],
   "repository": {
     "type": "git",
@@ -58,5 +62,8 @@
   "homepage": "https://github.com/xarmian/envoi-sdk#readme",
   "publishConfig": {
     "access": "public"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 } 
