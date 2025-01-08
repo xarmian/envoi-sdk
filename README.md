@@ -21,7 +21,7 @@ npm install @xarmian/envoi-sdk
 ### Initialize the SDK
 
 ```typescript
-import envoiSDK from 'envoi-sdk';
+import envoiSDK from '@xarmian/envoi-sdk';
 
 // Initialize with Algod node configuration
 const resolver = envoiSDK.init({
