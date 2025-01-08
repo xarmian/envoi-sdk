@@ -5,7 +5,7 @@ A TypeScript/JavaScript SDK for interacting with enVoi, the naming service for V
 ## Installation
 
 ```bash
-npm install envoi-sdk
+npm install @xarmian/envoi-sdk
 ```
 
 ## Features
