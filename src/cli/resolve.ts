@@ -31,31 +31,37 @@ Examples:
   }
 
   try {
+    let httpResult = '';
+    let chainResult = '';
+    let searchResults: Array<{ name: string; address: string; metadata?: unknown }> = [];
+
     switch (command) {
-      case 'name':
-        const httpName = await sdk.http.getNameFromAddress(query);
-        const chainName = await sdk.chain.getNameFromAddress(query);
+      case 'name': {
+        httpResult = await sdk.http.getNameFromAddress(query);
+        chainResult = await sdk.chain.getNameFromAddress(query);
         console.log('\nResolving address to name...');
-        console.log('HTTP Result:', httpName || '(not found)');
-        console.log('Chain Result:', chainName || '(not found)');
+        console.log('HTTP Result:', httpResult || '(not found)');
+        console.log('Chain Result:', chainResult || '(not found)');
         break;
+      }
 
-      case 'address':
-        const httpAddress = await sdk.http.getAddressFromName(query);
-        const chainAddress = await sdk.chain.getAddressFromName(query);
+      case 'address': {
+        httpResult = await sdk.http.getAddressFromName(query);
+        chainResult = await sdk.chain.getAddressFromName(query);
         console.log('\nResolving name to address...');
-        console.log('HTTP Result:', httpAddress || '(not found)');
-        console.log('Chain Result:', chainAddress || '(not found)');
+        console.log('HTTP Result:', httpResult || '(not found)');
+        console.log('Chain Result:', chainResult || '(not found)');
         break;
+      }
 
-      case 'search':
+      case 'search': {
         console.log('\nSearching for names matching:', query);
-        const results = await sdk.http.search(query);
-        if (results.length === 0) {
+        searchResults = await sdk.http.search(query);
+        if (searchResults.length === 0) {
           console.log('No results found');
         } else {
           console.log('\nResults:');
-          results.forEach((result, index) => {
+          searchResults.forEach((result, index) => {
             console.log(`\n${index + 1}. ${result.name}`);
             console.log(`   Address: ${result.address}`);
             if (result.metadata) {
@@ -64,6 +70,7 @@ Examples:
           });
         }
         break;
+      }
     }
   } catch (err) {
     if (err instanceof Error) {

@@ -160,7 +160,7 @@ describe('http-client', () => {
         metadata: { avatar: 'test1.jpg' }
       });
       expect(mockFetch).toHaveBeenCalledWith(
-        `${API_BASE_URL}/api/search?q=test`,
+        `${API_BASE_URL}/api/search?pattern=test`,
         expect.any(Object)
       );
     });

@@ -23,6 +23,12 @@ interface ContractResponse {
   returnValue: string;
 }
 
+interface ContractInstance {
+  contractId: number;
+  name: (arg: Uint8Array) => Promise<ContractResponse>;
+  arc72_ownerOf: (arg: bigint) => Promise<ContractResponse>;
+}
+
 export function createChainResolver(userConfig: AlgodConfig): EnvoiChainResolver {
   const algodClient = createAlgodClient(userConfig);
 
@@ -55,7 +61,7 @@ export function createChainResolver(userConfig: AlgodConfig): EnvoiChainResolver
       addr: queryAddress,
       sk: new Uint8Array([])
     }
-  );
+  ) as unknown as ContractInstance;
 
   return {
     getNameFromAddress: async (address: string): Promise<string> => {
@@ -63,10 +69,10 @@ export function createChainResolver(userConfig: AlgodConfig): EnvoiChainResolver
         return '';
       }
 
-      (ciResolver as any).contractId = resolverAppId;
+      ciResolver.contractId = resolverAppId;
       
       const lookup = await namehash(`${address}.addr.reverse`);
-      const nameR = await (ciResolver as any).name(lookup) as ContractResponse;
+      const nameR = await ciResolver.name(lookup);
 
       if (nameR.success) {
         return stripNullBytes(nameR.returnValue);
@@ -75,10 +81,10 @@ export function createChainResolver(userConfig: AlgodConfig): EnvoiChainResolver
     },
 
     getAddressFromName: async (name: string): Promise<string> => {
-      (ciResolver as any).contractId = vnsTokenAppId;
+      ciResolver.contractId = vnsTokenAppId;
 
       const lookup = uint8ArrayToBigInt(await namehash(`${name}`));
-      const nameR = await (ciResolver as any).arc72_ownerOf(lookup) as ContractResponse;
+      const nameR = await ciResolver.arc72_ownerOf(lookup);
 
       if (nameR.success) {
         return stripNullBytes(nameR.returnValue);
