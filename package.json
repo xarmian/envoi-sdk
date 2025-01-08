@@ -1,0 +1,62 @@
+{
+  "name": "envoi-sdk",
+  "version": "0.1.0",
+  "description": "SDK for enVoi, a naming service for Voi Network",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "type": "module",
+  "bin": {
+    "resolve": "./dist/cli/resolve.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest",
+    "test:watch": "NODE_OPTIONS=--experimental-vm-modules jest --watch",
+    "test:coverage": "NODE_OPTIONS=--experimental-vm-modules jest --coverage",
+    "lint": "eslint src --ext .ts",
+    "lint:fix": "eslint src --ext .ts --fix",
+    "prepare": "npm run build",
+    "prepublishOnly": "npm test && npm run lint",
+    "preversion": "npm run lint",
+    "version": "git add -A src",
+    "postversion": "git push && git push --tags"
+  },
+  "keywords": [
+    "voi",
+    "envoi",
+    "naming-service",
+    "algorand",
+    "avm"
+  ],
+  "author": "xarmian",
+  "license": "MIT",
+  "dependencies": {
+    "algosdk": "2.7.0",
+    "ulujs": "latest"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.0",
+    "@types/node": "^20.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint": "^8.0.0",
+    "jest": "^29.0.0",
+    "ts-jest": "^29.0.0",
+    "typescript": "^5.0.0"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xarmian/envoi-sdk.git"
+  },
+  "bugs": {
+    "url": "https://github.com/xarmian/envoi-sdk/issues"
+  },
+  "homepage": "https://github.com/xarmian/envoi-sdk#readme",
+  "publishConfig": {
+    "access": "public"
+  }
+} 
