@@ -165,6 +165,40 @@ npm test
 npm run lint
 ```
 
+## Publishing
+
+The package is automatically published to npm when a new GitHub release is created. To publish a new version:
+
+1. Update the version in package.json:
+```bash
+npm version patch  # for bug fixes (0.0.X)
+npm version minor  # for new features (0.X.0)
+npm version major  # for breaking changes (X.0.0)
+```
+
+2. Push the changes and tags:
+```bash
+git push && git push --tags
+```
+
+3. Create a new release on GitHub:
+   - Go to the repository's Releases page
+   - Click "Create a new release"
+   - Choose the new version tag
+   - Add release notes
+   - Publish the release
+
+The GitHub Actions workflow will automatically:
+- Run tests
+- Build the package
+- Publish to npm
+
+For manual publishing:
+```bash
+npm login  # if not already logged in
+npm publish
+```
+
 ## License
 
 MIT 
