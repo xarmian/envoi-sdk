@@ -1,6 +1,6 @@
 {
   "name": "@xarmian/envoi-sdk",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "SDK for enVoi, a naming service for Voi Network",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
