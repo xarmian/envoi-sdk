@@ -1,7 +1,20 @@
 import algosdk from "algosdk";
 
+async function getCrypto(): Promise<Crypto> {
+  if (typeof crypto !== 'undefined') {
+    return crypto;
+  }
+  if (typeof window === 'undefined') {
+    // Node.js environment
+    const { webcrypto } = await import('node:crypto');
+    return webcrypto as Crypto;
+  }
+  throw new Error('No crypto implementation available');
+}
+
 export async function sha256(data: Uint8Array): Promise<Uint8Array> {
-  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+  const cryptoModule = await getCrypto();
+  const hashBuffer = await cryptoModule.subtle.digest("SHA-256", data);
   return new Uint8Array(hashBuffer);
 }
 
