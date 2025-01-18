@@ -34,7 +34,7 @@ describe('http-client', () => {
       } as Response);
 
       const result = await client.getNameFromAddress('TESTADDRESS');
-      expect(result).toBe('test.voi');
+      expect(result).toEqual(['test.voi']);
       expect(mockFetch).toHaveBeenCalledWith(
         `${API_BASE_URL}/api/name/TESTADDRESS`,
         expect.any(Object)
@@ -47,7 +47,7 @@ describe('http-client', () => {
       } as Response);
 
       const result = await client.getNameFromAddress('TESTADDRESS');
-      expect(result).toBe('');
+      expect(result).toEqual(['']);
     });
 
     it('should correctly parse en.voi address response', async () => {
@@ -66,11 +66,50 @@ describe('http-client', () => {
       } as Response);
 
       const result = await client.getNameFromAddress(TEST_ADDRESS);
-      expect(result.toLowerCase()).toBe(TEST_NAME.toLowerCase());
+      expect(result[0].toLowerCase()).toBe(TEST_NAME.toLowerCase());
       expect(mockFetch).toHaveBeenCalledWith(
         `${API_BASE_URL}/api/name/${TEST_ADDRESS}`,
         expect.any(Object)
       );
+    });
+
+    it('should handle multiple addresses', async () => {
+      const mockResponse = {
+        results: [
+          {
+            address: 'TESTADDRESS1',
+            name: 'test1.voi',
+            metadata: {},
+            cached: false
+          },
+          {
+            address: 'TESTADDRESS2',
+            name: 'test2.voi',
+            metadata: {},
+            cached: false
+          }
+        ]
+      };
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve(mockResponse),
+      } as Response);
+
+      const result = await client.getNameFromAddress(['TESTADDRESS1', 'TESTADDRESS2']);
+      expect(result).toEqual(['test1.voi', 'test2.voi']);
+      expect(mockFetch).toHaveBeenCalledWith(
+        `${API_BASE_URL}/api/name/TESTADDRESS1,TESTADDRESS2`,
+        expect.any(Object)
+      );
+    });
+
+    it('should return array of empty strings for failed request with multiple addresses', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+      } as Response);
+
+      const result = await client.getNameFromAddress(['TESTADDRESS1', 'TESTADDRESS2']);
+      expect(result).toEqual(['', '']);
     });
   });
 
@@ -90,7 +129,7 @@ describe('http-client', () => {
       } as Response);
 
       const result = await client.getAddressFromName('test.voi');
-      expect(result).toBe('TESTADDRESS');
+      expect(result).toEqual(['TESTADDRESS']);
       expect(mockFetch).toHaveBeenCalledWith(
         `${API_BASE_URL}/api/address/test.voi`,
         expect.any(Object)
@@ -103,7 +142,7 @@ describe('http-client', () => {
       } as Response);
 
       const result = await client.getAddressFromName('test.voi');
-      expect(result).toBe('');
+      expect(result).toEqual(['']);
     });
 
     it('should correctly parse en.voi name response', async () => {
@@ -121,11 +160,50 @@ describe('http-client', () => {
       } as Response);
 
       const result = await client.getAddressFromName(TEST_NAME);
-      expect(result.toLowerCase()).toBe(TEST_ADDRESS.toLowerCase());
+      expect(result[0].toLowerCase()).toBe(TEST_ADDRESS.toLowerCase());
       expect(mockFetch).toHaveBeenCalledWith(
         `${API_BASE_URL}/api/address/${TEST_NAME}`,
         expect.any(Object)
       );
+    });
+
+    it('should handle multiple names', async () => {
+      const mockResponse = {
+        results: [
+          {
+            name: 'test1.voi',
+            address: 'TESTADDRESS1',
+            metadata: {},
+            cached: false
+          },
+          {
+            name: 'test2.voi',
+            address: 'TESTADDRESS2',
+            metadata: {},
+            cached: false
+          }
+        ]
+      };
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve(mockResponse),
+      } as Response);
+
+      const result = await client.getAddressFromName(['test1.voi', 'test2.voi']);
+      expect(result).toEqual(['TESTADDRESS1', 'TESTADDRESS2']);
+      expect(mockFetch).toHaveBeenCalledWith(
+        `${API_BASE_URL}/api/address/test1.voi,test2.voi`,
+        expect.any(Object)
+      );
+    });
+
+    it('should return array of empty strings for failed request with multiple names', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+      } as Response);
+
+      const result = await client.getAddressFromName(['test1.voi', 'test2.voi']);
+      expect(result).toEqual(['', '']);
     });
   });
 
@@ -183,6 +261,121 @@ describe('http-client', () => {
 
       const results = await client.search('nonexistent');
       expect(results).toEqual([]);
+    });
+  });
+
+  describe('getTokenInfo', () => {
+    const TEST_TOKEN_ID = '80067632360305829899847207196844336417360777167721505904064743996533051131418';
+    const TEST_TOKEN_ID_2 = '80067632360305829899847207196844336417360777167721505904064743996533051131419';
+    
+    it('should return token info for valid token ID', async () => {
+      const mockResponse = {
+        results: [{
+          token_id: TEST_TOKEN_ID,
+          name: 'test.voi',
+          address: 'TESTADDRESS',
+          metadata: { url: 'https://example.com' },
+          cached: false
+        }]
+      };
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve(mockResponse),
+      } as Response);
+
+      const result = await client.getTokenInfo(TEST_TOKEN_ID);
+      expect(result).toEqual([{
+        token_id: TEST_TOKEN_ID,
+        name: 'test.voi',
+        address: 'TESTADDRESS',
+        metadata: { url: 'https://example.com' }
+      }]);
+      expect(mockFetch).toHaveBeenCalledWith(
+        `${API_BASE_URL}/api/token/${TEST_TOKEN_ID}?avatar=thumb`,
+        expect.any(Object)
+      );
+    });
+
+    it('should handle multiple token IDs', async () => {
+      const mockResponse = {
+        results: [
+          {
+            token_id: TEST_TOKEN_ID,
+            name: 'test1.voi',
+            address: 'TESTADDRESS1',
+            metadata: { url: 'https://example1.com' },
+            cached: false
+          },
+          {
+            token_id: TEST_TOKEN_ID_2,
+            name: 'test2.voi',
+            address: 'TESTADDRESS2',
+            metadata: { url: 'https://example2.com' },
+            cached: false
+          }
+        ]
+      };
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve(mockResponse),
+      } as Response);
+
+      const result = await client.getTokenInfo([TEST_TOKEN_ID, TEST_TOKEN_ID_2]);
+      expect(result).toEqual([
+        {
+          token_id: TEST_TOKEN_ID,
+          name: 'test1.voi',
+          address: 'TESTADDRESS1',
+          metadata: { url: 'https://example1.com' }
+        },
+        {
+          token_id: TEST_TOKEN_ID_2,
+          name: 'test2.voi',
+          address: 'TESTADDRESS2',
+          metadata: { url: 'https://example2.com' }
+        }
+      ]);
+      expect(mockFetch).toHaveBeenCalledWith(
+        `${API_BASE_URL}/api/token/${TEST_TOKEN_ID},${TEST_TOKEN_ID_2}?avatar=thumb`,
+        expect.any(Object)
+      );
+    });
+
+    it('should return empty array for failed request', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+      } as Response);
+
+      const result = await client.getTokenInfo([TEST_TOKEN_ID, TEST_TOKEN_ID_2]);
+      expect(result).toEqual([]);
+    });
+
+    it('should filter out results with missing token_id', async () => {
+      const mockResponse = {
+        results: [
+          {
+            token_id: TEST_TOKEN_ID,
+            name: 'test1.voi',
+            address: 'TESTADDRESS1',
+            metadata: {},
+            cached: false
+          },
+          {
+            name: 'test2.voi',
+            address: 'TESTADDRESS2',
+            metadata: {},
+            cached: false
+          }
+        ]
+      };
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve(mockResponse),
+      } as Response);
+
+      const result = await client.getTokenInfo([TEST_TOKEN_ID, TEST_TOKEN_ID_2]);
+      expect(result).toHaveLength(1);
+      expect(result[0].token_id).toBe(TEST_TOKEN_ID);
     });
   });
 }); 

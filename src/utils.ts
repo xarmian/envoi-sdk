@@ -54,4 +54,13 @@ export async function namehash(name: string): Promise<Uint8Array> {
   }
 
   return node;
+}
+
+export function bigIntToUint8Array(value: bigint): Uint8Array {
+  const hex = value.toString(16).padStart(64, '0');
+  const array = new Uint8Array(32);
+  for (let i = 0; i < 32; i++) {
+    array[i] = parseInt(hex.slice(i * 2, (i + 1) * 2), 16);
+  }
+  return array;
 } 

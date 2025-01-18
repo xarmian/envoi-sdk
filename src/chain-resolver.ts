@@ -1,11 +1,12 @@
 import algosdk from "algosdk";
 import { CONTRACT } from "ulujs";
 import { queryAddress, resolverAppId, vnsTokenAppId } from "./config.js";
-import { isVoiAddress, namehash, stripNullBytes, uint8ArrayToBigInt } from "./utils.js";
+import { isVoiAddress, namehash, stripNullBytes, uint8ArrayToBigInt, bigIntToUint8Array } from "./utils.js";
 
 export interface EnvoiChainResolver {
   getNameFromAddress: (address: string) => Promise<string>;
   getAddressFromName: (name: string) => Promise<string>;
+  getNameFromToken: (tokenId: string) => Promise<string>;
 }
 
 export interface AlgodConfig {
@@ -90,6 +91,23 @@ export function createChainResolver(userConfig: AlgodConfig): EnvoiChainResolver
         return stripNullBytes(nameR.returnValue);
       }
       return '';
+    },
+
+    getNameFromToken: async (tokenId: string): Promise<string> => {
+      try {
+        ciResolver.contractId = resolverAppId;
+        
+        const tokenIdBigInt = BigInt(tokenId);
+        const nameR = await ciResolver.name(bigIntToUint8Array(tokenIdBigInt));
+
+        if (nameR.success) {
+          return stripNullBytes(nameR.returnValue);
+        }
+        return '';
+      } catch (error) {
+        console.error('Error resolving token name:', error);
+        return '';
+      }
     }
   };
 } 

@@ -1,9 +1,15 @@
 import { API_BASE_URL } from './config.js';
 
 export interface EnvoiHttpClient {
-  getNameFromAddress: (address: string) => Promise<string>;
-  getAddressFromName: (name: string) => Promise<string>;
+  getNameFromAddress: (address: string | string[]) => Promise<string[]>;
+  getAddressFromName: (name: string | string[]) => Promise<string[]>;
   search: (query: string) => Promise<Array<{
+    name: string;
+    address: string;
+    metadata?: unknown;
+  }>>;
+  getTokenInfo: (tokenId: string | string[], avatarFormat?: 'thumb' | 'full') => Promise<Array<{
+    token_id: string;
     name: string;
     address: string;
     metadata?: unknown;
@@ -16,6 +22,7 @@ interface EnvoiResponse {
     address: string;
     metadata: unknown;
     cached: boolean;
+    token_id?: string;
   }>;
 }
 
@@ -38,33 +45,35 @@ async function fetchWithTimeout(url: string, options: RequestInit = {}, timeout 
 
 export function createHttpClient(): EnvoiHttpClient {
   return {
-    getNameFromAddress: async (address: string): Promise<string> => {
+    getNameFromAddress: async (address: string | string[]): Promise<string[]> => {
       try {
-        const url = `${API_BASE_URL}/api/name/${address}`;
+        const addresses = Array.isArray(address) ? address : [address];
+        const url = `${API_BASE_URL}/api/name/${addresses.join(',')}`;
         const response = await fetchWithTimeout(url);
         if (!response.ok) {
-          return '';
+          return Array(addresses.length).fill('');
         }
         const data = await response.json() as EnvoiResponse;
-        return data.results?.[0]?.name || '';
+        return data.results.map(result => result.name || '');
       } catch (error) {
         console.error('Error fetching name from address:', error);
-        return '';
+        return Array(Array.isArray(address) ? address.length : 1).fill('');
       }
     },
 
-    getAddressFromName: async (name: string): Promise<string> => {
+    getAddressFromName: async (name: string | string[]): Promise<string[]> => {
       try {
-        const url = `${API_BASE_URL}/api/address/${name}`;
+        const names = Array.isArray(name) ? name : [name];
+        const url = `${API_BASE_URL}/api/address/${names.join(',')}`;
         const response = await fetchWithTimeout(url);
         if (!response.ok) {
-          return '';
+          return Array(names.length).fill('');
         }
         const data = await response.json() as EnvoiResponse;
-        return data.results?.[0]?.address || '';
+        return data.results.map(result => result.address || '');
       } catch (error) {
         console.error('Error fetching address from name:', error);
-        return '';
+        return Array(Array.isArray(name) ? name.length : 1).fill('');
       }
     },
 
@@ -87,6 +96,34 @@ export function createHttpClient(): EnvoiHttpClient {
         }));
       } catch (error) {
         console.error('Error searching names:', error);
+        return [];
+      }
+    },
+
+    getTokenInfo: async (tokenId: string | string[], avatarFormat: 'thumb' | 'full' = 'thumb'): Promise<Array<{
+      token_id: string;
+      name: string;
+      address: string;
+      metadata?: unknown;
+    }>> => {
+      try {
+        const tokenIds = Array.isArray(tokenId) ? tokenId : [tokenId];
+        const url = `${API_BASE_URL}/api/token/${tokenIds.join(',')}?avatar=${avatarFormat}`;
+        const response = await fetchWithTimeout(url);
+        if (!response.ok) {
+          return [];
+        }
+        const data = await response.json() as EnvoiResponse;
+        return data.results
+          .filter(result => result.token_id)
+          .map(result => ({
+            token_id: result.token_id!,
+            name: result.name,
+            address: result.address,
+            metadata: result.metadata
+          }));
+      } catch (error) {
+        console.error('Error fetching token info:', error);
         return [];
       }
     }

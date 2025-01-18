@@ -1,4 +1,4 @@
-import { isVoiAddress, stripNullBytes, uint8ArrayToBigInt } from '../utils';
+import { isVoiAddress, stripNullBytes, uint8ArrayToBigInt, bigIntToUint8Array } from '../utils';
 
 describe('utils', () => {
   describe('isVoiAddress', () => {
@@ -44,6 +44,32 @@ describe('utils', () => {
     it('should handle empty array', () => {
       const input = new Uint8Array([]);
       expect(uint8ArrayToBigInt(input)).toBe(BigInt(0));
+    });
+  });
+
+  describe('bigIntToUint8Array', () => {
+    it('should convert BigInt to Uint8Array', () => {
+      const input = BigInt('0x0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20');
+      const expected = new Uint8Array([
+        1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,
+        17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32
+      ]);
+      expect(bigIntToUint8Array(input)).toEqual(expected);
+    });
+
+    it('should pad small numbers with zeros', () => {
+      const input = BigInt(1);
+      const result = bigIntToUint8Array(input);
+      expect(result.length).toBe(32);
+      expect(result[31]).toBe(1);
+      expect(result.slice(0, 31).every(byte => byte === 0)).toBe(true);
+    });
+
+    it('should handle zero', () => {
+      const input = BigInt(0);
+      const result = bigIntToUint8Array(input);
+      expect(result.length).toBe(32);
+      expect(result.every(byte => byte === 0)).toBe(true);
     });
   });
 }); 
