@@ -43,16 +43,32 @@ export function isVoiAddress(address: string): boolean {
   return true;
 }
 
+
 export async function namehash(name: string): Promise<Uint8Array> {
   if (!name) {
     return new Uint8Array(32);
   }
 
   const labels = name.split(".").reverse();
+
+  // Force hashType to "all" if TLD is "reverse"
+  let hashType = "name";
+  if (labels[0] === "reverse") {
+    hashType = "all";
+  }
+  
   let node = new Uint8Array(32);
 
   for (const label of labels) {
     if (label) {
+      if (hashType === "name") {
+        const labelBytes = new TextEncoder().encode(label);
+        const labelHash = await sha256(labelBytes);
+        const combined = new Uint8Array(labelHash.length + node.length);
+        combined.set(node);
+        combined.set(labelHash, node.length);
+        node = await sha256(combined);
+      } else {
       const labelBytes = new TextEncoder().encode(label);
       const labelHash = !isVoiAddress(label)
         ? await sha256(labelBytes)
@@ -63,6 +79,7 @@ export async function namehash(name: string): Promise<Uint8Array> {
       combined.set(labelHash, node.length);
 
       node = await sha256(combined);
+    }
     }
   }
 
