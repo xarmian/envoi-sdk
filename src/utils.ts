@@ -43,14 +43,11 @@ export function isVoiAddress(address: string): boolean {
   return true;
 }
 
-type HashType = "name" | "all";
 
 export async function namehash(name: string): Promise<Uint8Array> {
   if (!name) {
     return new Uint8Array(32);
   }
-
-  const specialTlds = ["reverse"];
 
   const labels = name.split(".").reverse();
 
